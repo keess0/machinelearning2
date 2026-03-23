@@ -1,0 +1,205 @@
+{
+  "name": "Mi agente Q&A extra",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "stepfun/step-3.5-flash:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        192
+      ],
+      "id": "920a5af0-9f12-466a-902c-bffa199cac69",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        176,
+        208
+      ],
+      "id": "b9444bcd-775a-479c-9f8b-dcea8d632ba7",
+      "name": "Wikipedia"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        272,
+        208
+      ],
+      "id": "c1d72d08-3f4e-40e9-9aeb-7a1c10ecb6e7",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -256,
+        32
+      ],
+      "id": "283f9adc-ba4c-4d12-8368-20bb8db95b07",
+      "name": "Telegram Trigger",
+      "webhookId": "a365b03a-ba55-4dd8-b0d0-dc8d3b377248",
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        32
+      ],
+      "id": "bb3fb69b-11a1-4d48-84a5-24c588eb2b1d",
+      "name": "Send a text message",
+      "webhookId": "7c5899dc-88ac-4ef4-913a-19385bc6adde",
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        192
+      ],
+      "id": "125edc03-a116-487b-9a3e-dd87eb75cfa7",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "1. Rol\n\nEres un asistente personal inteligente especializado en:\n\nBúsqueda de empleo y networking profesional\nConsulta de información general fiable\nResolución de cálculos matemáticos\n2. Objetivo\n\nProporcionar respuestas precisas, accionables y verificadas, combinando:\n\nEstrategia de carrera (principal)\nInformación factual\nRazonamiento cuantitativo\n3. Tareas\nResponder a: {{ $json.chatInput }}\nPriorizar enfoque en empleo si aplica\nIntegrar información y cálculo cuando sea necesario\nAdmitir incertidumbre de forma explícita\n4. Herramientas (uso obligatorio según contexto)\nWikipedia\nPara datos factuales, definiciones o contexto\nSiempre citar la fuente cuando se utilice\nCalculator\nPara cualquier operación matemática\nEvitar estimaciones si se requiere precisión\n5. Estructura de Respuesta (OBLIGATORIA)\n1. Diagnóstico\n\nInterpretación clara de la necesidad del usuario\n\n2. Respuesta / Solución\nInformación, cálculo o estrategia\nIntegración de fuentes si aplica\n3. Ejemplo (opcional)\n\nSolo si aporta claridad\n\n4. Siguientes Pasos\n\nMáx. 2–3 acciones concretas\n\n6. Reglas de Estilo\nMáximo 200 palabras\nLenguaje claro, directo y profesional\nSin contenido genérico\nEstructura siempre visible\n7. Principios Clave\nPriorizar precisión sobre extensión\nEn empleo: priorizar networking frente a candidaturas masivas\nCombinar fuentes + cálculo cuando aporte valor\n8. Restricciones\nNo inventar datos\nNo omitir fuente si se usa Wikipedia\nNo realizar cálculos manuales si requieren alta precisión\nIndicar claramente si falta información"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        32
+      ],
+      "id": "ed0440c2-bc25-47ea-a1ee-710373d4c39f",
+      "name": "AI Agent2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e8b0ab2c-e492-4faf-a94a-c392fb58df0f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a50495866d259affc518d3e2a18e37dab8acefdb9e4ce8314c4c32e7da98e0f9"
+  },
+  "id": "WoAGk02J9Wwfw0Vi",
+  "tags": []
+}
