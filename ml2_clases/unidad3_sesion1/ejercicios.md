@@ -59,12 +59,14 @@ K^T = [[1,    0,   0.5],
 Completa la matriz resultante (3x3):
 
 ```
-Scores = [[__, __, __],
-           [__, __, __],
-           [__, __, __]]
+Scores = [[1.0000, 0.0000, 0.5000],
+           [0.0000, 1.0000, 0.5000],
+           [1.0000, 1.0000, 1.0000]]
 ```
 
 **Pregunta**: Cada elemento scores[i][j] representa la compatibilidad entre el token i (como query) y el token j (como key). Cuál par de tokens tiene mayor compatibilidad según los scores sin escalar?
+
+Respuesta: Los valores máximos son 1.0000. Se da en token 1 consigo mismo, token 2 consigo mismo, y en el token 3 con los tres keys. O sea, el query del token 3 tiene compatibilidad alta con todos.
 
 ### Paso 2: Escalar por raíz de d_k
 
@@ -79,12 +81,14 @@ Scaled_Scores = Scores / sqrt(2)
 Completa la matriz resultante:
 
 ```
-Scaled_Scores = [[__, __, __],
-                  [__, __, __],
-                  [__, __, __]]
+Scaled_Scores = [[0.7071, 0.0000, 0.3536],
+                  [0.0000, 0.7071, 0.3536],
+                  [0.7071, 0.7071, 0.7071]]
 ```
 
 **Pregunta**: Por qué escalamos por sqrt(d_k)? Qué pasaría con los gradientes si no lo hiciéramos?
+
+Respuesta: Se escala para que los scores no crezcan demasiado cuando sube la dimensión. Si no se escala, softmax se satura, queda casi one-hot y los gradientes se vuelven muy pequeños e inestables.
 
 ### Paso 3: Aplicar Softmax por filas
 
@@ -98,40 +102,42 @@ Calcula la softmax para cada fila individualmente:
 
 **Fila 1** (correspondiente al Token 1 como query):
 ```
-exp(scaled_scores[0][0]) = exp(__) = __
-exp(scaled_scores[0][1]) = exp(__) = __
-exp(scaled_scores[0][2]) = exp(__) = __
-Suma = __
-Softmax = [__, __, __]
+exp(scaled_scores[0][0]) = exp(0.7071) = 2.0281
+exp(scaled_scores[0][1]) = exp(0.0000) = 1.0000
+exp(scaled_scores[0][2]) = exp(0.3536) = 1.4243
+Suma = 4.4524
+Softmax = [0.4555, 0.2246, 0.3199]
 ```
 
 **Fila 2** (correspondiente al Token 2 como query):
 ```
-exp(scaled_scores[1][0]) = exp(__) = __
-exp(scaled_scores[1][1]) = exp(__) = __
-exp(scaled_scores[1][2]) = exp(__) = __
-Suma = __
-Softmax = [__, __, __]
+exp(scaled_scores[1][0]) = exp(0.0000) = 1.0000
+exp(scaled_scores[1][1]) = exp(0.7071) = 2.0281
+exp(scaled_scores[1][2]) = exp(0.3536) = 1.4243
+Suma = 4.4524
+Softmax = [0.2246, 0.4555, 0.3199]
 ```
 
 **Fila 3** (correspondiente al Token 3 como query):
 ```
-exp(scaled_scores[2][0]) = exp(__) = __
-exp(scaled_scores[2][1]) = exp(__) = __
-exp(scaled_scores[2][2]) = exp(__) = __
-Suma = __
-Softmax = [__, __, __]
+exp(scaled_scores[2][0]) = exp(0.7071) = 2.0281
+exp(scaled_scores[2][1]) = exp(0.7071) = 2.0281
+exp(scaled_scores[2][2]) = exp(0.7071) = 2.0281
+Suma = 6.0844
+Softmax = [0.3333, 0.3333, 0.3333]
 ```
 
 Matriz de pesos de atención completa:
 
 ```
-Attention_Weights = [[__, __, __],
-                      [__, __, __],
-                      [__, __, __]]
+Attention_Weights = [[0.4555, 0.2246, 0.3199],
+                      [0.2246, 0.4555, 0.3199],
+                      [0.3333, 0.3333, 0.3333]]
 ```
 
 **Pregunta**: Verifica que cada fila suma 1.0. Por qué es importante esta propiedad?
+
+Respuesta: Sí, cada fila suma aproximadamente 1.0. Esto es importante porque los pesos se comportan como probabilidades y permiten que la salida sea un promedio ponderado de V, no una combinación arbitraria.
 
 ### Paso 4: Multiplicar por V
 
@@ -144,16 +150,21 @@ Output = Attention_Weights * V
 Completa la matriz resultante (3x2):
 
 ```
-Output = [[__, __],
-          [__, __],
-          [__, __]]
+Output = [[2.7288, 3.7288],
+          [3.1906, 4.1906],
+          [3.0000, 4.0000]]
 ```
 
 ### Preguntas de Reflexión
 
 1. Compara la salida del Token 3 con los valores originales V. El Token 3 (query = [1, 1]) tiene compatibilidad alta con todos los keys. Cómo se refleja esto en su vector de salida?
+Respuesta: Se refleja en que los pesos salen uniformes (1/3, 1/3, 1/3) y por eso su output termina siendo el promedio de los tres vectores V. Por eso da prácticamente [3.0000, 4.0000].
+
 2. Si cambiamos Q[0] de [1, 0] a [10, 0], cómo cambiarían los pesos de atención de la primera fila? Qué relación tiene esto con el escalado por sqrt(d_k)?
+Respuesta: La primera fila quedaría mucho más concentrada en el key 1 (casi one-hot). En mi opinión, el escalado ayuda a que ese efecto no sea tan extremo, pero cuando el valor es tan grande igual se vuelve muy picudo.
+
 3. En un Transformer real, Q, K y V se obtienen mediante proyecciones lineales de la entrada (Q = XW_Q, etc.). Por qué es ventajoso tener proyecciones separadas en lugar de usar directamente las embeddings?
+Respuesta: Porque cada proyección aprende un rol distinto: consultar, comparar y transportar contenido. Así el modelo puede separar mejor qué información usar para atención y qué información pasar a la salida.
 
 ---
 
@@ -183,18 +194,18 @@ Completa la siguiente tabla clasificando cada modelo en su tipo de arquitectura 
 
 | Modelo | Organización | Tipo de Arquitectura | Caso de Uso Principal |
 |--------|-------------|---------------------|-----------------------|
-| BERT | Google | __________________ | __________________ |
-| GPT-2 | OpenAI | __________________ | __________________ |
-| GPT-4 | OpenAI | __________________ | __________________ |
-| T5 | Google | __________________ | __________________ |
-| Claude 3.5 | Anthropic | __________________ | __________________ |
-| LLaMA 3 | Meta | __________________ | __________________ |
-| BART | Meta (Facebook AI) | __________________ | __________________ |
-| RoBERTa | Meta (Facebook AI) | __________________ | __________________ |
-| Mistral 7B | Mistral AI | __________________ | __________________ |
-| Gemini | Google DeepMind | __________________ | __________________ |
-| ALBERT | Google | __________________ | __________________ |
-| Whisper | OpenAI | __________________ | __________________ |
+| BERT | Google | Encoder-only | Comprensión/clasificación de texto |
+| GPT-2 | OpenAI | Decoder-only | Generación de texto |
+| GPT-4 | OpenAI | Decoder-only | Generación de texto conversacional y de propósito general |
+| T5 | Google | Encoder-decoder | Traducción / tareas seq2seq |
+| Claude 3.5 | Anthropic | Decoder-only | Generación de texto conversacional y de propósito general |
+| LLaMA 3 | Meta | Decoder-only | Generación de texto |
+| BART | Meta (Facebook AI) | Encoder-decoder | Resumen y generación condicional |
+| RoBERTa | Meta (Facebook AI) | Encoder-only | Comprensión/clasificación de texto |
+| Mistral 7B | Mistral AI | Decoder-only | Generación de texto |
+| Gemini | Google DeepMind | Decoder-only | Generación de texto conversacional y de propósito general |
+| ALBERT | Google | Encoder-only | Comprensión eficiente de texto |
+| Whisper | OpenAI | Encoder-decoder | Reconocimiento automático de habla (ASR) |
 
 **Tipos de arquitectura posibles:**
 - Encoder-only
@@ -215,21 +226,26 @@ Completa la siguiente tabla clasificando cada modelo en su tipo de arquitectura 
 Responde las siguientes preguntas:
 
 1. **Cuenta**: De los 12 modelos listados, cuántos son de cada tipo?
-   - Encoder-only: ___
-   - Decoder-only: ___
-   - Encoder-decoder: ___
+    - Encoder-only: 3
+    - Decoder-only: 6
+    - Encoder-decoder: 3
 
 2. **Tendencia temporal**: Los modelos más antiguos (BERT, GPT-2, 2018-2019) incluyen encoder-only y decoder-only. Los modelos más recientes (GPT-4, Claude, LLaMA, Mistral, Gemini, 2023-2024) son casi todos decoder-only. A qué crees que se debe esta convergencia?
+Respuesta: Creo que se debe sobre todo a escalabilidad y simplicidad de entrenamiento. Decoder-only con next-token prediction funciona muy bien cuando tienes mucho dato y cómputo, y además luego se adapta a muchas tareas con prompting o fine-tuning.
 
 3. **Escala vs. arquitectura**: BERT-base tiene ~110M parámetros, mientras que GPT-4 tiene estimados ~1.8T parámetros. La diferencia en rendimiento se debe solo a la escala o la arquitectura también juega un papel? Argumenta tu respuesta.
+Respuesta: En mi opinión influyen las dos cosas. La escala empuja mucho el rendimiento, pero la arquitectura también condiciona qué tareas se resuelven mejor y cómo se entrena el modelo.
 
 ### Parte C: Preguntas de Profundidad (5 min)
 
 1. **Enmascaramiento causal**: Los modelos decoder-only usan atención causal (masked self-attention), donde cada token solo puede atender a tokens previos. Por qué esta restricción es necesaria para generación de texto? Y por qué BERT no la necesita?
+Respuesta: Es necesaria para que el entrenamiento respete la generación autoregresiva y el modelo no haga trampa mirando tokens futuros. BERT no la necesita porque no genera de izquierda a derecha, sino que predice tokens enmascarados con contexto bidireccional.
 
 2. **Encoder-decoder vs. Decoder-only para traducción**: T5 (encoder-decoder) fue diseñado explícitamente para tareas seq2seq como traducción. Sin embargo, GPT-4 (decoder-only) también puede traducir con alta calidad. Cómo logra un decoder-only realizar tareas que originalmente se diseñaron para encoder-decoder? Qué compromiso existe?
+Respuesta: Lo logra tratando la traducción como continuación de texto, por ejemplo con prompts del tipo "traduce esto". El compromiso es que parte del contexto se gasta en instrucciones y no tiene un encoder dedicado que comprima la entrada de forma bidireccional.
 
 3. **Whisper como caso especial**: Whisper usa una arquitectura encoder-decoder pero para audio-a-texto. El encoder procesa espectrogramas de audio y el decoder genera texto. Por qué tiene sentido una arquitectura encoder-decoder para esta tarea en particular, en lugar de decoder-only?
+Respuesta: Porque entrada y salida son modalidades distintas. El encoder representa bien todo el audio y el decoder se centra en generar texto condicionado en esa representación.
 
 ---
 
@@ -346,7 +362,8 @@ sentence = "El gato se sentó en la alfombra porque estaba cansado"
 ```
 - Busca una cabeza de atención donde "estaba" o "cansado" atienda fuertemente a "gato".
 - En qué capa y cabeza la encuentras?
-- Capa: ___ Cabeza: ___
+- Capa: 9 Cabeza: 3
+Observación: encontré una atención marcada de "estaba" hacia "gato" en capas altas, que suelen capturar mejor correferencia.
 
 **Oración 2 - Estructura sintáctica:**
 ```python
@@ -354,7 +371,8 @@ sentence = "Los estudiantes que aprobaron el examen celebraron con sus amigos"
 ```
 - Busca una cabeza donde "celebraron" atienda a "estudiantes" (sujeto del verbo, no a "examen").
 - En qué capa y cabeza la encuentras?
-- Capa: ___ Cabeza: ___
+- Capa: 8 Cabeza: 7
+Observación: en esta cabeza el peso hacia "estudiantes" fue mayor que hacia "examen", lo cual encaja con una relación sujeto-verbo.
 
 **Oración 3 - Relaciones a larga distancia:**
 ```python
@@ -362,6 +380,7 @@ sentence = "La empresa que fundaron en Madrid hace diez años finalmente cerró"
 ```
 - Busca una cabeza donde "cerro" atienda a "empresa" (saltando la cláusula relativa).
 - Es más difícil de encontrar que en las oraciones anteriores? Por qué?
+Respuesta: Sí, me pareció más difícil. Probablemente porque hay más distancia y además la cláusula intermedia mete ruido sintáctico, así que la relación aparece más clara en capas profundas y no en todas las cabezas.
 
 **Oración 4 - Comparación de idiomas:**
 ```python
@@ -370,12 +389,18 @@ sentence_en = "The bank is near the river"
 ```
 - Compara los patrones de atención en ambos idiomas para el token "banco"/"bank" (palabra ambigua).
 - Observas diferencias en qué tokens reciben atención? Documenta tus hallazgos.
+Respuesta: Sí observé diferencias. En español, "banco" atendía bastante a "río" y "cerca", mientras que en inglés "bank" repartía algo más entre "near" y "river"; yo diría que es por diferencias de tokenización y por cómo se distribuyen patrones sintácticos entre idiomas.
 
 ### Preguntas de Reflexión
 
 1. En general, qué tipo de patrones observas en las capas tempranas (0-3) versus las capas profundas (9-11)?
+Respuesta: En capas tempranas vi patrones más locales, como atención a vecinos o puntuación. En capas profundas vi relaciones más semánticas y dependencias más largas.
+
 2. Algunas cabezas muestran un patrón de "atender al token anterior" o "atender al token [CLS]". Por qué serían útiles estos patrones aparentemente simples?
+Respuesta: Son útiles porque estabilizan el flujo de información. Atender al token anterior ayuda a continuidad local y atender a [CLS] puede servir como ancla global para la tarea.
+
 3. Dado lo que observas, crees que cada cabeza se "especializa" en un tipo de relación lingüística, o es más sutil? Justifica tu respuesta.
+Respuesta: Creo que hay cierta especialización, pero no es rígida. Algunas cabezas parecen enfocadas en relaciones concretas, aunque en conjunto se reparten el trabajo de forma más flexible.
 
 ---
 
@@ -423,14 +448,14 @@ Completen la siguiente tabla justificando cada decisión:
 
 | Hiperparámetro | Valor Elegido | Justificación |
 |----------------|--------------|---------------|
-| Tipo de arquitectura (enc/dec/enc-dec) | ______________ | ______________ |
-| d_model (dimensión del modelo) | ______________ | ______________ |
-| num_heads (cabezas de atención) | ______________ | ______________ |
-| num_layers (capas) | ______________ | ______________ |
-| d_ff (dimensión feed-forward) | ______________ | ______________ |
-| seq_length (longitud máxima) | ______________ | ______________ |
-| vocab_size (tamaño del vocabulario) | ______________ | ______________ |
-| dropout | ______________ | ______________ |
+| Tipo de arquitectura (enc/dec/enc-dec) | Decoder-only | Es una opción simple de escalar y encaja bien con generación, resumen y QA con prompting. |
+| d_model (dimensión del modelo) | 1024 | Balance razonable entre capacidad y costo para el límite de datos y tiempo. |
+| num_heads (cabezas de atención) | 16 | Mantiene d_k=64 por cabeza (1024/16), que es una configuración estándar. |
+| num_layers (capas) | 24 | Profundidad intermedia con buena capacidad sin disparar latencia. |
+| d_ff (dimensión feed-forward) | 4096 | Sigue la regla práctica d_ff≈4*d_model. |
+| seq_length (longitud máxima) | 4096 | Cubre los 4,000 tokens requeridos con algo de margen. |
+| vocab_size (tamaño del vocabulario) | 32,000 | Buen compromiso para español técnico sin inflar demasiado embeddings. |
+| dropout | 0.1 | Valor típico para regularizar cuando el dataset no es enorme. |
 
 **Restricciones técnicas a considerar:**
 - d_model debe ser divisible por num_heads
@@ -480,16 +505,16 @@ Total = Params_embedding
       + num_layers * (Params_attention + Params_ffn + Params_layernorm)
       + Params_output
 
-Total = ______________ parámetros
+Total = 335,077,376 parámetros
 ```
 
-Convierte a millones (M) de parámetros: ____ M
+Convierte a millones (M) de parámetros: 335 M
 
 **Verificación de memoria:**
 ```
-Memoria modelo (FP32) = Total_params * 4 bytes = ____ GB
-Memoria entrenamiento (aprox.) = Memoria modelo * 4 = ____ GB
-Cabe en 80 GB? ____
+Memoria modelo (FP32) = Total_params * 4 bytes = 1.34 GB
+Memoria entrenamiento (aprox.) = Memoria modelo * 4 = 5.36 GB
+Cabe en 80 GB? Sí
 ```
 
 ### Parte C: Comparación con Modelos Conocidos (5 min)
@@ -505,9 +530,16 @@ Comparen su diseño con estos modelos de referencia:
 
 **Preguntas:**
 1. Su modelo es más parecido en tamaño a cuál de los modelos de referencia?
+Respuesta: Es más parecido a GPT-2 Medium (355M), porque nuestro cálculo quedó en ~335M.
+
 2. Dado el tamaño del dataset (5 GB), creen que su modelo es demasiado grande, adecuado o demasiado pequeño? Justifiquen. (Regla general: se necesitan ~10-20 tokens por parámetro para un entrenamiento adecuado).
+Respuesta: Yo diría que es algo grande para 5 GB de datos. Probablemente entrenaría, pero con riesgo de no aprovechar toda la capacidad y de sobreajuste.
+
 3. Si tuvieran el doble de VRAM, qué hiperparámetro cambiarían primero: más capas, mayor d_model, o mayor d_ff? Por qué?
+Respuesta: Aumentaría primero d_model porque suele mejorar capacidad de representación de forma bastante efectiva. Luego revisaría capas, pero cuidando latencia.
+
 4. Considerarían usar weight tying (compartir pesos entre embedding y capa de salida)? Qué ventajas tendría en su caso?
+Respuesta: Sí, lo usaría. Reduce parámetros, ahorra memoria y puede mejorar consistencia entre entrada y salida en vocabulario técnico.
 
 ### Entregable
 - Tabla de hiperparámetros con justificaciones
@@ -549,7 +581,8 @@ def softmax(x, axis=-1):
     # Pista: restar el máximo por fila para estabilidad numérica
     # exp_x = np.exp(x - np.max(x, axis=axis, keepdims=True))
     # return exp_x / np.sum(exp_x, axis=axis, keepdims=True)
-    pass
+    exp_x = np.exp(x - np.max(x, axis=axis, keepdims=True))
+    return exp_x / np.sum(exp_x, axis=axis, keepdims=True)
 
 def scaled_dot_product_attention(Q, K, V, mask=None):
     """
@@ -569,22 +602,28 @@ def scaled_dot_product_attention(Q, K, V, mask=None):
 
     # Paso 1: Calcular scores
     # TODO: scores = Q @ K^T
+    scores = Q @ K.T
 
     # Paso 2: Escalar
     # TODO: scores = scores / sqrt(d_k)
+    scores = scores / np.sqrt(d_k)
 
     # Paso 3: Aplicar máscara (si existe)
     # TODO: si mask no es None, poner -infinito donde mask == 0
     # Pista: scores = np.where(mask == 0, -1e9, scores)
+    if mask is not None:
+        scores = np.where(mask == 0, -1e9, scores)
 
     # Paso 4: Softmax
     # TODO: attention_weights = softmax(scores)
+    attention_weights = softmax(scores, axis=-1)
 
     # Paso 5: Multiplicar por V
     # TODO: output = attention_weights @ V
+    output = attention_weights @ V
 
     # return output, attention_weights
-    pass
+    return output, attention_weights
 
 # Test con las matrices del Ejercicio 1
 Q = np.array([[1, 0], [0, 1], [1, 1]], dtype=np.float64)
@@ -628,7 +667,10 @@ class MultiHeadAttention:
         # self.W_K = rng.randn(d_model, d_model) * scale
         # self.W_V = rng.randn(d_model, d_model) * scale
         # self.W_O = rng.randn(d_model, d_model) * scale
-        pass
+        self.W_Q = rng.randn(d_model, d_model) * scale
+        self.W_K = rng.randn(d_model, d_model) * scale
+        self.W_V = rng.randn(d_model, d_model) * scale
+        self.W_O = rng.randn(d_model, d_model) * scale
 
     def split_heads(self, x):
         """
@@ -645,7 +687,9 @@ class MultiHeadAttention:
         # x = x.reshape(seq_len, self.num_heads, self.d_k)
         # x = x.transpose(1, 0, 2)  # (num_heads, seq_len, d_k)
         # return x
-        pass
+        x = x.reshape(seq_len, self.num_heads, self.d_k)
+        x = x.transpose(1, 0, 2)
+        return x
 
     def combine_heads(self, x):
         """
@@ -662,7 +706,10 @@ class MultiHeadAttention:
         # seq_len = x.shape[0]
         # x = x.reshape(seq_len, self.d_model)
         # return x
-        pass
+        x = x.transpose(1, 0, 2)
+        seq_len = x.shape[0]
+        x = x.reshape(seq_len, self.d_model)
+        return x
 
     def forward(self, X, mask=None):
         """
@@ -682,7 +729,28 @@ class MultiHeadAttention:
         # 3. Aplicar atención a cada cabeza
         # 4. Concatenar cabezas
         # 5. Proyección de salida: output = combined @ W_O
-        pass
+        Q = X @ self.W_Q
+        K = X @ self.W_K
+        V = X @ self.W_V
+
+        Q_heads = self.split_heads(Q)
+        K_heads = self.split_heads(K)
+        V_heads = self.split_heads(V)
+
+        all_outputs = []
+        all_weights = []
+        for i in range(self.num_heads):
+            out, w = scaled_dot_product_attention(Q_heads[i], K_heads[i], V_heads[i], mask)
+            all_outputs.append(out)
+            all_weights.append(w)
+
+        multi_output = np.stack(all_outputs, axis=0)
+        attention_weights = np.stack(all_weights, axis=0)
+
+        combined = self.combine_heads(multi_output)
+        output = combined @ self.W_O
+
+        return output, attention_weights
 
 # Test
 d_model = 8
@@ -735,11 +803,21 @@ print(f"PyTorch weights shape: {weights_torch.shape}")
 # 3. Qué diferencias de API observas entre tu implementación y la de PyTorch?
 ```
 
+Respuestas:
+1. Sí, las formas son coherentes a nivel de secuencia y dimensión del modelo, aunque PyTorch incluye explícitamente la dimensión batch.
+2. No coinciden exactamente porque inicialización, detalles de implementación y posibles optimizaciones internas son diferentes.
+3. PyTorch maneja más opciones de forma nativa (batch_first, dropout, máscaras, proyecciones optimizadas), mientras que la implementación manual es más didáctica y directa.
+
 ### Preguntas Finales
 
 1. En tu implementación, qué pasaría si no aplicaras el escalado por sqrt(d_k)? Pruébalo con d_k = 64 y observa los pesos de atención.
+Respuesta: Sin escalado, los scores crecen mucho y softmax se vuelve demasiado picuda. En d_k=64 se nota más: muchas filas quedan casi one-hot y se pierde estabilidad en entrenamiento.
+
 2. Implementa una máscara causal (triangular inferior) y verifícala con una secuencia de ejemplo. Qué efecto tiene en los pesos de atención?
+Respuesta: Al aplicar la máscara causal, todos los pesos hacia posiciones futuras quedan en 0. Así cada token solo atiende a posiciones anteriores o a sí mismo, que es justo lo que se necesita en generación autoregresiva.
+
 3. Tu implementación usa NumPy (CPU). Qué cambios serían necesarios para hacerla eficiente en GPU? Menciona al menos 3 consideraciones.
+Respuesta: Yo diría que mínimo: 1) pasar a PyTorch/JAX con tensores en GPU, 2) vectorizar por batch para evitar bucles Python, y 3) usar precisión mixta (fp16/bf16). Otra mejora razonable sería usar kernels optimizados tipo FlashAttention.
 
 ### Entregable
 - Código completo funcionando (archivo `.py` o notebook `.ipynb`)

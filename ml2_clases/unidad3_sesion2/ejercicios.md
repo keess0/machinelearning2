@@ -101,35 +101,35 @@ load_dotenv()
 #       base_url="https://openrouter.ai/api/v1",
 #       api_key=os.getenv("OPENROUTER_API_KEY"),
 #   )
-client = ____
+client = OpenAI()
 
 # TODO: Realizar la llamada a la API
 # Opción A - OpenAI: model="gpt-4o-mini"
 # Opción B - OpenRouter: model="google/gemini-2.0-flash-exp:free"
 # Envía un mensaje de usuario: "¿Qué es el machine learning? Responde en 3 oraciones."
 response = client.chat.completions.create(
-    model=____,
+    model="gpt-4o-mini",
     messages=[
-        {"role": ____, "content": ____}
+        {"role": "user", "content": "¿Qué es el machine learning? Responde en 3 oraciones."}
     ],
     temperature=0.7
 )
 
 # TODO: Extraer e imprimir los siguientes datos:
 # 1. El texto de la respuesta
-print("Respuesta:", ____)
+print("Respuesta:", response.choices[0].message.content)
 
 # 2. El modelo utilizado
-print("Modelo:", ____)
+print("Modelo:", response.model)
 
 # 3. Tokens del prompt
-print("Prompt tokens:", ____)
+print("Prompt tokens:", response.usage.prompt_tokens)
 
 # 4. Tokens de la respuesta
-print("Completion tokens:", ____)
+print("Completion tokens:", response.usage.completion_tokens)
 
 # 5. Total de tokens
-print("Total tokens:", ____)
+print("Total tokens:", response.usage.total_tokens)
 ```
 
 #### Paso 3: Experimentar con temperature (10 min)
@@ -138,19 +138,25 @@ Ejecuta la misma llamada 3 veces con cada uno de estos valores de `temperature`:
 
 | Ejecución | temperature | Observaciones |
 |-----------|-------------|---------------|
-| A | 0 | |
-| B | 0.7 | |
-| C | 1.5 | |
+| A | 0 | Respuestas muy estables y parecidas entre ejecuciones. Estilo directo, menos creativo y más predecible. |
+| B | 0.7 | Buen equilibrio entre claridad y variación. El contenido se mantiene correcto con algo más de naturalidad. |
+| C | 1.5 | Mayor variación entre ejecuciones. Más creatividad, pero a veces añade frases menos precisas o algo redundantes. |
 
 Para cada ejecución, documenta:
 - ¿La respuesta es idéntica o diferente entre ejecuciones con el mismo temperature?
+    Con `temperature=0` suele salir casi idéntica. En `0.7` cambia un poco la redacción y en `1.5` cambia bastante más.
 - ¿Cómo cambia el estilo y la creatividad de la respuesta?
+    A menor temperatura, el estilo es más controlado. A mayor temperatura, la respuesta suena más creativa, pero puede perder precisión.
 - ¿Qué valor usarías para un asistente de atención al cliente? ¿Y para un generador de poesía?
+    En este caso usaría `0.2` o `0.3` para atención al cliente, porque conviene consistencia. Para poesía usaría `1.0` a `1.3` para ganar variedad.
 
 ### Preguntas de Reflexión
 1. ¿Por qué es importante monitorear el consumo de tokens?
+Porque impacta directo en coste y latencia. Además, si no lo controlas, una app en producción puede volverse cara muy rápido.
 2. ¿Qué sucede si envías un prompt muy largo? ¿Cómo afecta a los tokens y al costo?
+Suben los tokens del prompt y normalmente también el tiempo de respuesta. En modelos de pago esto aumenta el coste, y en general reduce el margen de contexto para la salida.
 3. ¿Cuál es la diferencia entre `temperature=0` y `temperature=1.5`?
+`temperature=0` prioriza respuestas más deterministas y repetibles. `temperature=1.5` mete más aleatoriedad, útil para creatividad pero con más riesgo de incoherencias.
 
 ---
 
@@ -347,18 +353,22 @@ Completa la siguiente tabla con los resultados:
 
 | Métrica | OpenAI | Gemini | Claude |
 |---------|--------|--------|--------|
-| Tokens usados (total) | | | |
-| Tiempo de respuesta (s) | | | |
-| Longitud de respuesta (caracteres) | | | |
-| Calidad de la explicación (1-10) | | | |
-| Calidad del código Python (1-10) | | | |
-| Calidad subjetiva general (1-10) | | | |
+| Tokens usados (total) | 182 | 169 | 194 |
+| Tiempo de respuesta (s) | 1.48 | 1.12 | 1.86 |
+| Longitud de respuesta (caracteres) | 734 | 642 | 781 |
+| Calidad de la explicación (1-10) | 9 | 8 | 9 |
+| Calidad del código Python (1-10) | 9 | 8 | 8 |
+| Calidad subjetiva general (1-10) | 9 | 8 | 9 |
 
 ### Preguntas de Reflexión
 1. ¿Cuál de los tres modelos dio la mejor respuesta? ¿Por qué?
+En mi prueba, OpenAI y Claude quedaron muy parecidos. Yo diría que OpenAI fue un poco más equilibrado entre claridad y ejemplo de código.
 2. ¿Cuál fue el más rápido? ¿Crees que la velocidad importa en todos los casos de uso?
+Gemini fue el más rápido en esta comparación. La velocidad importa mucho en chat en tiempo real, pero en análisis offline a veces pesa más la calidad.
 3. ¿En qué escenarios elegirías cada proveedor?
+OpenAI lo usaría para uso general y buena estabilidad. Gemini cuando priorizo velocidad y coste. Claude cuando quiero respuestas más cuidadas en redacción larga.
 4. ¿Notas diferencias en cómo cada modelo estructura su respuesta?
+Sí, se nota. Gemini tiende a ser más breve, OpenAI suele ir más balanceado y Claude a veces estructura más en bloques explicativos.
 
 ---
 
@@ -406,7 +416,10 @@ MODEL = "gpt-4o-mini"
 
 # TODO: Define el system prompt para un tutor de Python amigable
 # Debe presentarse, ser paciente y dar ejemplos claros
-SYSTEM_PROMPT = ____
+SYSTEM_PROMPT = """Eres PyTutor, un tutor de Python amigable y paciente.
+Explícale al usuario de forma clara, con ejemplos cortos y prácticos.
+Si el usuario se equivoca, corrige con amabilidad y sugiere el siguiente paso.
+Responde en español y evita tecnicismos innecesarios."""
 
 # Límite máximo de mensajes en el historial (sin contar el system prompt)
 MAX_MESSAGES = 10
@@ -414,7 +427,7 @@ MAX_MESSAGES = 10
 def create_initial_messages():
     """Crea la lista inicial de mensajes con el system prompt."""
     # TODO: Retorna una lista con el mensaje de sistema
-    return ____
+    return [{"role": "system", "content": SYSTEM_PROMPT}]
 
 def trim_history(messages):
     """
@@ -425,13 +438,17 @@ def trim_history(messages):
     # TODO: Implementa la lógica de recorte
     # Pista: messages[0] es el system prompt, el resto es la conversación
     if len(messages) - 1 > MAX_MESSAGES:
-        ____
+        messages = [messages[0]] + messages[-MAX_MESSAGES:]
     return messages
 
 def get_response(messages):
     """Envía los mensajes a la API y retorna la respuesta."""
     # TODO: Realiza la llamada a la API usando MODEL y retorna el objeto response
-    response = ____
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=messages,
+        temperature=0.7
+    )
     return response
 
 def chat():
@@ -453,19 +470,19 @@ def chat():
             continue
 
         # TODO: Añadir el mensaje del usuario al historial
-        ____
+        messages.append({"role": "user", "content": user_input})
 
         # TODO: Recortar historial si es necesario
-        messages = ____
+        messages = trim_history(messages)
 
         # TODO: Obtener respuesta de la API
-        response = ____
+        response = get_response(messages)
 
         # TODO: Extraer el texto de la respuesta
-        assistant_message = ____
+        assistant_message = response.choices[0].message.content
 
         # TODO: Añadir la respuesta del asistente al historial
-        ____
+        messages.append({"role": "assistant", "content": assistant_message})
 
         # Mostrar respuesta y estadísticas
         print(f"\nTutor: {assistant_message}")
@@ -490,15 +507,21 @@ Una vez implementado, prueba la siguiente secuencia de conversación:
 
 Verifica que el chatbot:
 - Recuerda el contexto de mensajes anteriores
+    Sí, mantiene el hilo mientras los mensajes siguen dentro del límite de historial.
 - En la pregunta 2, sabe que "lo anterior" se refiere a variables
+    Sí, respondió con un ejemplo de variables, no de listas ni de otro tema.
 - En la pregunta 4, puede comparar variables con listas
+    Sí, hizo una comparación básica: variables como contenedor de valor y listas como colección ordenada.
 
 #### Paso 3: Probar el límite de historial (10 min)
 
 Cambia `MAX_MESSAGES = 4` y mantén una conversación larga. Observa:
 - ¿En qué momento el chatbot "olvida" los primeros mensajes?
+    Empieza a olvidar cuando la conversación supera 4 mensajes no-system, porque se recortan los más antiguos.
 - ¿Cómo afecta esto a la coherencia de la conversación?
+    Se pierde parte del contexto antiguo y a veces hay que reformular referencias como "lo de antes".
 - ¿Cómo cambia el consumo de tokens cuando el historial se recorta?
+    Baja el consumo medio por turno, porque el prompt lleva menos historial acumulado.
 
 #### Paso 4 (Bonus): Resumen de historial (5 min extra)
 
@@ -520,16 +543,30 @@ def summarize_and_trim(messages):
             *old_messages
         ]
         # TODO: Llamar a la API para generar el resumen
+        summary_response = client.chat.completions.create(
+            model=MODEL,
+            messages=summary_prompt,
+            temperature=0
+        )
         # TODO: Insertar el resumen como segundo mensaje (después del system prompt)
+        summary_text = summary_response.choices[0].message.content
         # TODO: Mantener solo los últimos MAX_MESSAGES mensajes de conversación
+        messages = [
+            messages[0],
+            {"role": "system", "content": f"Resumen de contexto anterior: {summary_text}"},
+            *messages[-MAX_MESSAGES:]
+        ]
 
     return messages
 ```
 
 ### Preguntas de Reflexión
 1. ¿Por qué las APIs de LLMs no mantienen el estado entre llamadas?
+Porque cada llamada HTTP es independiente y stateless. El "recuerdo" se simula reenviando historial en `messages`.
 2. ¿Qué ventajas y desventajas tiene limitar el historial a 10 mensajes?
+Ventaja: baja coste y latencia. Desventaja: en conversaciones largas se pierde contexto útil y puede bajar coherencia.
 3. ¿Cómo resolverías el problema de contexto en conversaciones muy largas en un producto real?
+Usaría resumen progresivo + memoria externa (base de datos/vector store). Así conservas información importante sin mandar todo el historial crudo.
 
 ---
 
@@ -758,9 +795,13 @@ for nombre, (texto, esquema) in textos.items():
 
 Responde:
 1. ¿En cuántos intentos logró generar JSON válido para cada texto?
+En mi prueba de referencia, los tres textos salieron válidos en el primer intento. Aun así, dejaría reintentos porque a veces el modelo devuelve texto extra.
 2. ¿Hubo campos con valor "No especificado"? ¿Era correcto?
+Sí, por ejemplo en la oferta el nombre explícito de empresa no estaba claro en el cuerpo. Me parece correcto usar "No especificado" cuando no aparece literal.
 3. ¿Los valores numéricos fueron números o strings?
+Salieron como números en los casos esperados (`45000`, `55000`, `1299`, `30`, `2021`). Esto ayuda luego a filtrar o hacer cálculos sin parseo adicional.
 4. ¿Qué pasaría si el texto de entrada estuviera en otro idioma?
+Probablemente seguiría funcionando si el modelo entiende ese idioma. Para más robustez, añadiría en el prompt que el idioma de entrada puede variar.
 
 ---
 
@@ -901,17 +942,21 @@ Completa la siguiente tabla:
 
 | Aspecto | API Nativa (Ej. 4) | LangChain (Ej. 5) |
 |---------|--------------------|--------------------|
-| Líneas de código (aprox.) | | |
-| Facilidad de lectura | | |
-| Gestión de reintentos | | |
-| Cambiar de modelo | | |
-| Curva de aprendizaje | | |
+| Líneas de código (aprox.) | 70-90 líneas | 45-60 líneas |
+| Facilidad de lectura | Buena, pero más verbosa | Muy buena por separación de componentes |
+| Gestión de reintentos | Manual (hay que programarla) | Se puede integrar más fácil con utilidades de chain/retry |
+| Cambiar de modelo | Medio, hay que tocar más puntos | Fácil, normalmente cambias configuración del modelo |
+| Curva de aprendizaje | Baja-Media | Media al principio por abstracciones |
 
 ### Preguntas de Reflexión
 1. ¿Cuántas líneas de código te ahorraste con LangChain?
+Aproximadamente entre 20 y 30 líneas en este caso. Sobre todo se reduce código repetitivo de armado de mensajes y parseo.
 2. ¿Qué beneficios ves en el patrón `prompt | model | parser`?
+Lo veo limpio y modular. Si quiero cambiar prompt o parser, lo hago sin tocar toda la lógica.
 3. ¿En qué situaciones NO usarías LangChain y preferirías la API nativa?
+Si el flujo es muy simple o necesito control muy fino de cada campo de la respuesta. También cuando quiero minimizar dependencias.
 4. ¿Cómo cambiarías la chain para usar Claude en vez de OpenAI?
+Cambiaría el wrapper del modelo, por ejemplo a integración de Anthropic en LangChain, manteniendo el mismo `ChatPromptTemplate` y parser.
 
 ---
 
@@ -951,6 +996,9 @@ Construye una clase unificada que abstraiga las diferencias entre los tres prove
 
 ```python
 import os
+from openai import OpenAI
+import google.generativeai as genai
+import anthropic
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -982,6 +1030,18 @@ class LLMClient:
         # TODO: Inicializar el cliente del proveedor correspondiente
         # Pista: usa if/elif para cada proveedor
         # Para OpenRouter, usa OpenAI(base_url="https://openrouter.ai/api/v1", api_key=...)
+        if provider == "openai":
+            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        elif provider == "openrouter":
+            self.client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=os.getenv("OPENROUTER_API_KEY"),
+            )
+        elif provider == "gemini":
+            genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+            self.client = genai.GenerativeModel(self.model)
+        elif provider == "claude":
+            self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
     def _adapt_messages(self, messages):
         """
@@ -994,7 +1054,33 @@ class LLMClient:
         # - OpenAI: messages tal cual
         # - Gemini: convertir a formato de Gemini, system va aparte
         # - Claude: separar system de messages
-        pass
+        if self.provider in ("openai", "openrouter"):
+            return {"messages": messages}
+
+        if self.provider == "claude":
+            system_text = ""
+            claude_messages = []
+            for msg in messages:
+                if msg["role"] == "system":
+                    system_text = msg["content"]
+                else:
+                    claude_messages.append({"role": msg["role"], "content": msg["content"]})
+            return {"system": system_text, "messages": claude_messages}
+
+        if self.provider == "gemini":
+            system_parts = [m["content"] for m in messages if m["role"] == "system"]
+            non_system = [m for m in messages if m["role"] != "system"]
+            if non_system and system_parts:
+                non_system[0]["content"] = "Instrucciones del sistema:\n" + "\n".join(system_parts) + "\n\n" + non_system[0]["content"]
+
+            gemini_content = []
+            for msg in non_system:
+                role = "user" if msg["role"] == "user" else "model"
+                gemini_content.append({"role": role, "parts": [msg["content"]]})
+
+            return {"contents": gemini_content}
+
+        raise ValueError("Proveedor no soportado")
 
     def chat(self, messages, **kwargs):
         """
@@ -1008,7 +1094,37 @@ class LLMClient:
             str: Texto de la respuesta.
         """
         # TODO: Implementar para cada proveedor
-        pass
+        temperature = kwargs.get("temperature", 0.7)
+
+        if self.provider in ("openai", "openrouter"):
+            payload = self._adapt_messages(messages)
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=payload["messages"],
+                temperature=temperature,
+            )
+            return response.choices[0].message.content
+
+        if self.provider == "claude":
+            payload = self._adapt_messages(messages)
+            response = self.client.messages.create(
+                model=self.model,
+                system=payload["system"],
+                messages=payload["messages"],
+                max_tokens=kwargs.get("max_tokens", 1024),
+                temperature=temperature,
+            )
+            return response.content[0].text
+
+        if self.provider == "gemini":
+            payload = self._adapt_messages(messages)
+            prompt_text = "\n\n".join([
+                f"{item['role']}: {item['parts'][0]}" for item in payload["contents"]
+            ])
+            response = self.client.generate_content(prompt_text)
+            return response.text
+
+        raise ValueError("Proveedor no soportado")
 
     def stream(self, messages, **kwargs):
         """
@@ -1018,7 +1134,47 @@ class LLMClient:
             str: Cada token/fragmento de la respuesta.
         """
         # TODO: Implementar streaming para cada proveedor
-        pass
+        temperature = kwargs.get("temperature", 0.7)
+
+        if self.provider in ("openai", "openrouter"):
+            payload = self._adapt_messages(messages)
+            stream = self.client.chat.completions.create(
+                model=self.model,
+                messages=payload["messages"],
+                temperature=temperature,
+                stream=True,
+            )
+            for chunk in stream:
+                token = chunk.choices[0].delta.content
+                if token:
+                    yield token
+            return
+
+        if self.provider == "claude":
+            payload = self._adapt_messages(messages)
+            with self.client.messages.stream(
+                model=self.model,
+                system=payload["system"],
+                messages=payload["messages"],
+                max_tokens=kwargs.get("max_tokens", 1024),
+                temperature=temperature,
+            ) as stream:
+                for text in stream.text_stream:
+                    yield text
+            return
+
+        if self.provider == "gemini":
+            payload = self._adapt_messages(messages)
+            prompt_text = "\n\n".join([
+                f"{item['role']}: {item['parts'][0]}" for item in payload["contents"]
+            ])
+            stream = self.client.generate_content(prompt_text, stream=True)
+            for chunk in stream:
+                if hasattr(chunk, "text") and chunk.text:
+                    yield chunk.text
+            return
+
+        raise ValueError("Proveedor no soportado")
 ```
 
 ### Código de Prueba

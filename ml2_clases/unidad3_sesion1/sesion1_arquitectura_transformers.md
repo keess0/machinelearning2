@@ -852,18 +852,29 @@ Espacio de trabajo:
 
 Paso 1: Scores = Q × K^T
 ┌─────────┐   ┌─────────┐   ┌─────────┐
-│  1   0  │ × │  0   1  │ = │  ?   ?  │
-│  0   1  │   │  1   0  │   │  ?   ?  │
+│  1   0  │ × │  0   1  │ = │  0   1  │
+│  0   1  │   │  1   0  │   │  1   0  │
 └─────────┘   └─────────┘   └─────────┘
 
 Paso 2: Escalar ÷ √2 ≈ 1.414
-...
+Scores escalados:
+[[0.000, 0.707],
+ [0.707, 0.000]]
 
 Paso 3: Softmax por filas
-...
+Pesos de atención:
+[[0.330, 0.670],
+ [0.670, 0.330]]
 
 Paso 4: Pesos × V
-...
+Salida:
+[[1.670, 3.670],
+ [1.330, 3.330]]
+
+Interpretación:
+- El token 1 presta más atención al token 2 (0.670 > 0.330).
+- El token 2 presta más atención al token 1 (0.670 > 0.330).
+- Hay atención cruzada dominante, no autoatención dominante.
 ```
 
 ### 5.3 Ejercicio 2: Análisis de Arquitecturas
@@ -874,12 +885,12 @@ Para cada tarea, indica el tipo de arquitectura más adecuado y justifica tu ele
 
 | Tarea | Tipo de Arquitectura | Justificación |
 |-------|---------------------|---------------|
-| Clasificación de emails como spam/no spam | ¿? | ¿? |
-| Chatbot de atención al cliente | ¿? | ¿? |
-| Traducción automática español → inglés | ¿? | ¿? |
-| Generación de código a partir de descripción | ¿? | ¿? |
-| Búsqueda semántica en documentos | ¿? | ¿? |
-| Resumen automático de artículos | ¿? | ¿? |
+| Clasificación de emails como spam/no spam | Encoder-only | Necesita comprensión contextual bidireccional para clasificar correctamente el texto completo. |
+| Chatbot de atención al cliente | Decoder-only | La tarea principal es generar respuestas token a token de forma natural y coherente con el historial. |
+| Traducción automática español → inglés | Encoder-Decoder | Requiere mapear una secuencia de entrada a otra secuencia de salida con cross-attention. |
+| Generación de código a partir de descripción | Decoder-only | Es una tarea generativa autoregresiva donde el modelo produce código paso a paso. |
+| Búsqueda semántica en documentos | Encoder-only | Conviene obtener embeddings ricos del texto para comparar similitud semántica. |
+| Resumen automático de artículos | Encoder-Decoder | Es una transformación de texto largo a texto corto, ideal para arquitectura seq-to-seq. |
 
 ### 5.4 Herramientas de Visualización
 
