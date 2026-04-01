@@ -2,7 +2,10 @@
 
 ## Generador de Titulares con Miniature GPT
 
----
+#### Enlace al codigo fucnional
+
+https://colab.research.google.com/drive/1pjqFb4-AjDgTpLPiE1L_moVPMk2f8CAW?usp=sharing
+-------------------------------------------------------------------------------------
 
 ## Información General
 
@@ -335,6 +338,12 @@ plt.tight_layout()
 plt.show()
 ```
 
+Epoch 26/28
+944/944 ━━━━━━━━━━━━━━━━━━━━ 85s 90ms/step - accuracy: 0.9558 - loss: 0.1280 - learning_rate: 0.0010
+Epoch 27/28
+944/944 ━━━━━━━━━━━━━━━━━━━━ 85s 90ms/step - accuracy: 0.9559 - loss: 0.1277 - learning_rate: 0.0010
+Epoch 28/28
+944/944 ━━━━━━━━━━━━━━━━━━━━ 85s 90ms/step - accuracy: 0.9562 - loss: 0.1265 - learning_rate: 0.0010
 ![1775070953610](image/practica/1775070953610.png)
 
 Vemos que la precisión aumentó hasta un valor sobresaliente.
@@ -399,14 +408,11 @@ Salida:
 === Temperatura 0.5 ===
 el gobierno con raacia dianana con la ansispiran a la accion y la reflexion
 
-
 === Temperatura 1.0 ===
 el gobierno conses upanes que prevenir el equibrio emocionales justicia sociales y medioambientales
 
-
 === Temperatura 1.5 ===
 el gobierno coqfinanidad espacia y la conservacion de los ecosistemas marinos protegiendo la vida en nuestros oc
-
 
 ### Experimentación Adicional
 
@@ -428,22 +434,19 @@ for inicio in inicios:
     print(f"  → {generar_texto(model, inicio, temperatura=0.3)}")
     print()
 ```
+
 === Temperatura 0.8 ===
 Inicio: 'La economía '
   → la economia avais qiana esua con ciberne un mundo digitando la salud mental en un mundo agitado
 
-
 Inicio: 'Un nuevo '
   → un nuevo paraeas ciudades avances en que se adaptan alcanzan la reflexion
-
 
 Inicio: 'El presidente '
   → el presidente biancia sia como la activismo enfrentando la atencion medica con la tecnologia avanzada
 
-
 Inicio: 'Argentina '
   → argentina vincia diancia de la aracia una habilidad y el bienestar emocional
-
 
 Inicio: 'Se espera '
   → se espera parandandnanda el futuro de la salud mental y la conservacion de los ecosistemas marinos protegiendo
@@ -451,10 +454,8 @@ Inicio: 'Se espera '
 Inicio: 'se destapa '
   → se dastapa ananda esua caus autosus contre la conservacion de la biodiversidad
 
-
 Inicio: 'Primicia '
   → primicia dianandandandandandandanda educacion cibernetica para una navegacion segura en linea
-
 
 === Temperatura 0.3 ===
 Inicio: 'La economía '
@@ -463,40 +464,33 @@ Inicio: 'La economía '
 Inicio: 'Un nuevo '
   → un nuevo paraeas coeans conservacion de la biodivitiendo una ia marina y ecosistemas submarinos
 
-
 Inicio: 'El presidente '
   → el presidente cia dianea de enfendiendo un arratis y espacial en la vida en nuestros oceanos
-
 
 Inicio: 'Argentina '
   → argentina de la aracia en personciencia y el cine documental como motor de cambio social
 
-
 Inicio: 'Se espera '
   → se espera andananda el aracion emocionando el aula mente en equilibrio
-
 
 Inicio: 'se destapa '
   → se dastapa ana esuaus causus consus que pre cine documentales que abordan cuestiones globales y locales
 
-
 Inicio: 'Primicia '
   → primicia avancaans ena la era menteniendo un arratis que superan la accion y la concienciacion
+
 > **Documenta tus observaciones:** ¿Qué patrones ha capturado el modelo? ¿Genera palabras reales en español? ¿Los titulares tienen estructura coherente? ¿Cómo cambia el resultado con diferentes temperaturas?
 
 **Reflexión:**
 
 1. **¿Qué patrones ha capturado el modelo?**
-  Creo que capturó bien el formato general de titular: inicio temático, tono informativo y combinación de temas frecuentes (salud, tecnología, medioambiente, educación). También se ve que repite ciertas secuencias de caracteres, lo cual es típico cuando el modelo todavía está aprendiendo a nivel de carácter.
-
+   Creo que capturó bien el formato general de titular: inicio temático, tono informativo y combinación de temas frecuentes (salud, tecnología, medioambiente, educación). También se ve que repite ciertas secuencias de caracteres, lo cual es típico cuando el modelo todavía está aprendiendo a nivel de carácter.
 2. **¿Genera palabras reales en español?**
-  Sí, genera varias palabras reales y frases parcialmente comprensibles, pero todavía mezcla muchas pseudo-palabras como "dianandanda" o "arratis". En mi opinión esto indica que aprendió patrones ortográficos del español, pero no consolidó del todo el nivel léxico.
-
+   Sí, genera varias palabras reales y frases parcialmente comprensibles, pero todavía mezcla muchas pseudo-palabras como "dianandanda" o "arratis". En mi opinión esto indica que aprendió patrones ortográficos del español, pero no consolidó del todo el nivel léxico.
 3. **¿Los titulares tienen estructura coherente?**
-  La estructura es medianamente coherente: suelen empezar bien y mantener una idea general de noticia. El problema aparece en la continuidad, porque algunas secuencias se degradan y pierden sentido semántico a mitad del titular.
-
+   La estructura es medianamente coherente: suelen empezar bien y mantener una idea general de noticia. El problema aparece en la continuidad, porque algunas secuencias se degradan y pierden sentido semántico a mitad del titular.
 4. **¿Cómo cambia el resultado con diferentes temperaturas?**
-  Con temperatura **0.3** el texto es más conservador y repetitivo, con menos variedad. Con **0.8** aparece más diversidad y creatividad, pero también más errores y palabras inventadas. Yo diría que una temperatura intermedia (por ejemplo 0.5-0.7) podría dar mejor balance entre coherencia y novedad.
+   Con temperatura **0.3** el texto es más conservador y repetitivo, con menos variedad. Con **0.8** aparece más diversidad y creatividad, pero también más errores y palabras inventadas. Yo diría que una temperatura intermedia (por ejemplo 0.5-0.7) podría dar mejor balance entre coherencia y novedad.
 
 ---
 
