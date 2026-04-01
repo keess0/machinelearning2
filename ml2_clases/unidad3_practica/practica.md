@@ -1,17 +1,18 @@
 # Práctica Evaluable - Unidad 3
+
 ## Generador de Titulares con Miniature GPT
 
 ---
 
 ## Información General
 
-| Campo | Valor |
-|-------|-------|
-| **Unidad** | 3 - Arquitectura Transformers y Acceso Programático |
-| **Tipo** | Práctica individual |
-| **Duración estimada** | 120 minutos |
-| **Entrega** | Notebook Jupyter (.ipynb) o enlace a Google Colab |
-| **Fecha límite** | Según calendario del curso |
+| Campo                        | Valor                                                |
+| ---------------------------- | ---------------------------------------------------- |
+| **Unidad**             | 3 - Arquitectura Transformers y Acceso Programático |
+| **Tipo**               | Práctica individual                                 |
+| **Duración estimada** | 120 minutos                                          |
+| **Entrega**            | Notebook Jupyter (.ipynb) o enlace a Google Colab    |
+| **Fecha límite**      | Según calendario del curso                          |
 
 ---
 
@@ -20,6 +21,7 @@
 Implementar un modelo Transformer desde cero para generar titulares de noticias en español, consolidando los conceptos teóricos de la arquitectura Transformer aplicándolos en código real.
 
 **Basado en:** Tutorial de Keras "Text generation with a miniature GPT"
+
 - Artículo: [https://keras.io/examples/generative/text_generation_with_miniature_gpt/](https://keras.io/examples/generative/text_generation_with_miniature_gpt/)
 - Código: [https://github.com/keras-team/keras-io/blob/master/examples/generative/text_generation_with_miniature_gpt.py](https://github.com/keras-team/keras-io/blob/master/examples/generative/text_generation_with_miniature_gpt.py)
 
@@ -72,6 +74,8 @@ print(f"Muestra:\n{text[:500]}")
 ```
 
 > **Nota:** Si `gdown` no está instalado, ejecuta `!pip install gdown` primero.
+>
+> ![1775043243673](image/practica/1775043243673.png)
 
 ---
 
@@ -106,11 +110,13 @@ def decode(ids):
     return ''.join([idx_to_char[i] for i in ids])
 
 # Test
-print(encode("Hola"))
-print(decode([27, 52, 47, 38]))
+print(encode("hola"))
+print(decode([15, 22, 19, 8]))
 ```
 
 > **Reflexión:** Con tokenización a nivel de carácter, el modelo debe aprender a formar palabras desde cero. Esto es más difícil que la tokenización por subpalabras, pero nos permite ver cómo el modelo aprende patrones lingüísticos desde lo más básico.
+>
+> ![1775043812228](image/practica/1775043812228.png)
 
 ---
 
@@ -121,6 +127,7 @@ print(decode([27, 52, 47, 38]))
 Para entrenar un modelo de lenguaje autoregresivo, la entrada es una secuencia de tokens y la salida esperada es la misma secuencia desplazada una posición a la derecha. Esto se conoce como **teacher forcing**: en cada posición, el modelo recibe el token correcto como entrada y debe predecir el siguiente.
 
 Por ejemplo, si la secuencia es `"Hola"` → `[H, o, l, a]`:
+
 - **Entrada (X):** `[H, o, l]`
 - **Salida (y):** `[o, l, a]`
 
@@ -153,6 +160,8 @@ dataset = dataset.shuffle(10000).batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
 ```
 
 > **Importante:** `SEQ_LENGTH = 80` define la ventana de contexto del modelo. Un titular típico tiene entre 40 y 100 caracteres, por lo que 80 es un valor razonable. `BATCH_SIZE = 64` agrupa las secuencias para entrenamiento eficiente en GPU.
+>
+> funciona:![1775043940743](image/practica/1775043940743.png)
 
 ---
 
@@ -227,6 +236,7 @@ class TransformerBlock(layers.Layer):
 ```
 
 > **Conexión con la teoría:**
+>
 > - **Multi-Head Attention:** Permite al modelo atender a diferentes partes de la secuencia simultáneamente. Cada "cabeza" puede capturar relaciones distintas (sintácticas, semánticas, etc.).
 > - **Máscara causal:** La matriz triangular inferior garantiza que la posición `i` solo puede atender a las posiciones `0, 1, ..., i`. Esto es lo que hace que el modelo sea autoregresivo.
 > - **Feed-Forward Network (FFN):** Dos capas densas con activación GELU. Procesa cada posición de forma independiente, añadiendo capacidad de transformación no lineal.
@@ -242,12 +252,12 @@ Ahora ensamblamos los componentes en un modelo completo. Apilamos varios bloques
 
 ### Hiperparámetros
 
-| Parámetro | Valor | Descripción |
-|-----------|-------|-------------|
-| `EMBED_DIM` | 256 | Dimensión de los embeddings |
-| `NUM_HEADS` | 4 | Cabezas de atención (cada una de dim 64) |
-| `FF_DIM` | 512 | Dimensión interna de la FFN |
-| `NUM_BLOCKS` | 4 | Número de bloques Transformer apilados |
+| Parámetro     | Valor | Descripción                              |
+| -------------- | ----- | ----------------------------------------- |
+| `EMBED_DIM`  | 256   | Dimensión de los embeddings              |
+| `NUM_HEADS`  | 4     | Cabezas de atención (cada una de dim 64) |
+| `FF_DIM`     | 512   | Dimensión interna de la FFN              |
+| `NUM_BLOCKS` | 4     | Número de bloques Transformer apilados   |
 
 ### Código
 
@@ -289,11 +299,11 @@ model.compile(
 )
 
 callbacks = [
-    keras.callbacks.EarlyStopping(patience=3, restore_best_weights=True),
+    keras.callbacks.EarlyStopping(patience=3, restore_best_weights=True),#Hemos modificado la paciencia varias veces para mejorar el resultado
     keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=2)
 ]
 
-history = model.fit(dataset, epochs=30, callbacks=callbacks)
+history = model.fit(dataset, epochs=28, callbacks=callbacks) # el número de épocas ha sido optimizado gracias a las pruebas de las épocas
 ```
 
 ### Visualización de Curvas de Entrenamiento
@@ -325,6 +335,10 @@ plt.tight_layout()
 plt.show()
 ```
 
+![1775070953610](image/practica/1775070953610.png)
+
+Vemos que la precisión aumentó hasta un valor sobresaliente.
+
 > **Esperable:** La pérdida debería descender progresivamente y la precisión debería aumentar. Si el modelo no converge, prueba a ajustar la tasa de aprendizaje o el número de épocas.
 
 ---
@@ -342,6 +356,8 @@ La generación de texto se realiza de forma **autoregresiva**: el modelo predice
 ### Código
 
 ```python
+
+
 def generar_texto(model, inicio, longitud=100, temperatura=1.0):
     """Genera texto de forma autoregresiva."""
     generado = list(encode(inicio))
@@ -378,20 +394,109 @@ print("\n=== Temperatura 1.5 ===")
 print(generar_texto(model, "El gobierno ", temperatura=1.5))
 ```
 
+Salida:
+
+=== Temperatura 0.5 ===
+el gobierno con raacia dianana con la ansispiran a la accion y la reflexion
+
+
+=== Temperatura 1.0 ===
+el gobierno conses upanes que prevenir el equibrio emocionales justicia sociales y medioambientales
+
+
+=== Temperatura 1.5 ===
+el gobierno coqfinanidad espacia y la conservacion de los ecosistemas marinos protegiendo la vida en nuestros oc
+
+
 ### Experimentación Adicional
 
 Prueba con diferentes textos de inicio para explorar lo que el modelo ha aprendido:
 
 ```python
-inicios = ["La economía ", "Un nuevo ", "El presidente ", "Argentina ", "Se espera "]
+inicios = ["La economía ", "Un nuevo ", "El presidente ", "Argentina ", "Se espera ", "se destapa ", "primicia "]
 
+#temperatura 0.8
+print("=== Temperatura 0.8 ===")
 for inicio in inicios:
     print(f"Inicio: '{inicio}'")
     print(f"  → {generar_texto(model, inicio, temperatura=0.8)}")
     print()
+#temperatura 0.3
+print("=== Temperatura 0.3 ===")
+for inicio in inicios:
+    print(f"Inicio: '{inicio}'")
+    print(f"  → {generar_texto(model, inicio, temperatura=0.3)}")
+    print()
 ```
+=== Temperatura 0.8 ===
+Inicio: 'La economía '
+  → la economia avais qiana esua con ciberne un mundo digitando la salud mental en un mundo agitado
 
+
+Inicio: 'Un nuevo '
+  → un nuevo paraeas ciudades avances en que se adaptan alcanzan la reflexion
+
+
+Inicio: 'El presidente '
+  → el presidente biancia sia como la activismo enfrentando la atencion medica con la tecnologia avanzada
+
+
+Inicio: 'Argentina '
+  → argentina vincia diancia de la aracia una habilidad y el bienestar emocional
+
+
+Inicio: 'Se espera '
+  → se espera parandandnanda el futuro de la salud mental y la conservacion de los ecosistemas marinos protegiendo
+
+Inicio: 'se destapa '
+  → se dastapa ananda esua caus autosus contre la conservacion de la biodiversidad
+
+
+Inicio: 'Primicia '
+  → primicia dianandandandandandandanda educacion cibernetica para una navegacion segura en linea
+
+
+=== Temperatura 0.3 ===
+Inicio: 'La economía '
+  → la economia ans anana esua consenus consus y transparente nuestrans cibernetica en la era digital protegiendo nu
+
+Inicio: 'Un nuevo '
+  → un nuevo paraeas coeans conservacion de la biodivitiendo una ia marina y ecosistemas submarinos
+
+
+Inicio: 'El presidente '
+  → el presidente cia dianea de enfendiendo un arratis y espacial en la vida en nuestros oceanos
+
+
+Inicio: 'Argentina '
+  → argentina de la aracia en personciencia y el cine documental como motor de cambio social
+
+
+Inicio: 'Se espera '
+  → se espera andananda el aracion emocionando el aula mente en equilibrio
+
+
+Inicio: 'se destapa '
+  → se dastapa ana esuaus causus consus que pre cine documentales que abordan cuestiones globales y locales
+
+
+Inicio: 'Primicia '
+  → primicia avancaans ena la era menteniendo un arratis que superan la accion y la concienciacion
 > **Documenta tus observaciones:** ¿Qué patrones ha capturado el modelo? ¿Genera palabras reales en español? ¿Los titulares tienen estructura coherente? ¿Cómo cambia el resultado con diferentes temperaturas?
+
+**Reflexión:**
+
+1. **¿Qué patrones ha capturado el modelo?**
+  Creo que capturó bien el formato general de titular: inicio temático, tono informativo y combinación de temas frecuentes (salud, tecnología, medioambiente, educación). También se ve que repite ciertas secuencias de caracteres, lo cual es típico cuando el modelo todavía está aprendiendo a nivel de carácter.
+
+2. **¿Genera palabras reales en español?**
+  Sí, genera varias palabras reales y frases parcialmente comprensibles, pero todavía mezcla muchas pseudo-palabras como "dianandanda" o "arratis". En mi opinión esto indica que aprendió patrones ortográficos del español, pero no consolidó del todo el nivel léxico.
+
+3. **¿Los titulares tienen estructura coherente?**
+  La estructura es medianamente coherente: suelen empezar bien y mantener una idea general de noticia. El problema aparece en la continuidad, porque algunas secuencias se degradan y pierden sentido semántico a mitad del titular.
+
+4. **¿Cómo cambia el resultado con diferentes temperaturas?**
+  Con temperatura **0.3** el texto es más conservador y repetitivo, con menos variedad. Con **0.8** aparece más diversidad y creatividad, pero también más errores y palabras inventadas. Yo diría que una temperatura intermedia (por ejemplo 0.5-0.7) podría dar mejor balance entre coherencia y novedad.
 
 ---
 
@@ -410,12 +515,12 @@ for inicio in inicios:
 
 ## Rúbrica de Evaluación
 
-| Criterio (Peso) | Excelente | Satisfactorio | Insuficiente |
-|-----------------|-----------|---------------|--------------|
-| **Código funcional (30% - 3 pts)** | 3-2.4 pts: Notebook se ejecuta completamente sin errores | 2.3-1.5 pts: Funciona con errores menores | 1.4-0 pts: No se ejecuta o errores críticos |
-| **Implementación del Transformer (30% - 3 pts)** | 3-2.4 pts: Implementación correcta de embeddings, atención causal y bloques | 2.3-1.5 pts: Mayormente correcta con pequeñas imprecisiones | 1.4-0 pts: Componentes mal implementados o faltantes |
-| **Experimentación documentada (20% - 2 pts)** | 2-1.6 pts: Gráficas de entrenamiento y múltiples ejemplos con temperaturas | 1.5-1 pts: Experimentación básica con documentación parcial | 0.9-0 pts: Sin experimentación |
-| **Análisis y reflexión (20% - 2 pts)** | 2-1.6 pts: Análisis profundo de patrones y limitaciones | 1.5-1 pts: Reflexiones básicas pero correctas | 0.9-0 pts: Sin análisis |
+| Criterio (Peso)                                         | Excelente                                                                     | Satisfactorio                                                  | Insuficiente                                         |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------- |
+| **Código funcional (30% - 3 pts)**               | 3-2.4 pts: Notebook se ejecuta completamente sin errores                      | 2.3-1.5 pts: Funciona con errores menores                      | 1.4-0 pts: No se ejecuta o errores críticos         |
+| **Implementación del Transformer (30% - 3 pts)** | 3-2.4 pts: Implementación correcta de embeddings, atención causal y bloques | 2.3-1.5 pts: Mayormente correcta con pequeñas imprecisiones   | 1.4-0 pts: Componentes mal implementados o faltantes |
+| **Experimentación documentada (20% - 2 pts)**    | 2-1.6 pts: Gráficas de entrenamiento y múltiples ejemplos con temperaturas  | 1.5-1 pts: Experimentación básica con documentación parcial | 0.9-0 pts: Sin experimentación                      |
+| **Análisis y reflexión (20% - 2 pts)**          | 2-1.6 pts: Análisis profundo de patrones y limitaciones                      | 1.5-1 pts: Reflexiones básicas pero correctas                 | 0.9-0 pts: Sin análisis                             |
 
 ---
 
@@ -475,11 +580,13 @@ for inicio in inicios:
 ## Recursos Útiles
 
 ### Herramientas
+
 - [Google Colab](https://colab.research.google.com)
 - [Keras Documentation](https://keras.io)
 - [TensorFlow Documentation](https://www.tensorflow.org)
 
 ### Referencias
+
 - [Text generation with a miniature GPT (Keras)](https://keras.io/examples/generative/text_generation_with_miniature_gpt/)
 - [Código fuente del tutorial](https://github.com/keras-team/keras-io/blob/master/examples/generative/text_generation_with_miniature_gpt.py)
 - [Attention Is All You Need (paper original)](https://arxiv.org/abs/1706.03762)

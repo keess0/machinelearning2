@@ -118,15 +118,15 @@ Completa la siguiente tabla de evaluación (puntúa de 1 a 5 cada criterio):
 
 | Criterio | n8n | Make | Zapier | Peso (importancia) |
 |----------|-----|------|--------|---------------------|
-| Coste (menor es mejor) | 5 | 4 | 2 | Alta |
+| Coste (menor es mejor) | 5 | 3 | 2 | Alta |
 | Facilidad de uso | 3 | 4 | 5 | Media |
 | Integración con WhatsApp | 4 | 4 | 4 | Alta |
-| Capacidades de IA nativas | 4 | 3 | 2 | Alta |
+| Capacidades de IA nativas | 5 | 3 | 3 | Alta |
 | Despliegue on-premise (datos sensibles) | 5 | 1 | 1 | Muy Alta |
 | Número de integraciones disponibles | 3 | 4 | 5 | Media |
 | Soporte de la comunidad | 4 | 3 | 4 | Baja |
 | Escalabilidad | 4 | 4 | 3 | Media |
-| **Total ponderado** | 83 | 64 | 58 | |
+| **Total ponderado** | 86 | 61 | 61 | |
 
 **Instrucciones para el total ponderado:**
 - Muy Alta = x4, Alta = x3, Media = x2, Baja = x1
@@ -136,7 +136,7 @@ Completa la siguiente tabla de evaluación (puntúa de 1 a 5 cada criterio):
 Basándoos en la tabla, responded las siguientes preguntas:
 
 1. **Plataforma recomendada**: ¿Cuál elegís y por qué?
-Elegimos n8n, pero por poco margen sobre Make. Le dimos más peso real a privacidad y control de datos, y ahí n8n nos compensa aunque tenga más curva técnica.
+Elegimos n8n porque en este caso pesan mucho la privacidad, el control de datos y el coste. Al ser clínica dental con datos sensibles, on-premise y control operativo son factores clave.
 
 2. **Factor determinante**: ¿Cuál fue el criterio que más influyó en vuestra decisión? ¿Cambiaría la decisión si ese criterio no fuera importante?
 El factor más determinante fue on-premise por normativa sanitaria. Si ese criterio bajara de importancia, probablemente elegiríamos Make por equilibrio entre coste y facilidad.
@@ -148,7 +148,7 @@ La principal desventaja es el mantenimiento técnico y la puesta en marcha inici
 
 Ahora imaginad que el caso de uso cambia: en lugar de una clínica dental con datos sensibles, se trata de una **tienda de ropa online** que solo necesita automatizar publicaciones en Instagram y responder mensajes directos. ¿Cambiaría vuestra recomendación? ¿Por qué?
 
-Sí, en este escenario yo me iría con Make antes que n8n. Tiene buena experiencia visual, suficiente para Instagram/DM y normalmente un coste más controlable que Zapier a medio plazo.
+Sí, en este escenario probablemente elegiría Zapier. Para automatizaciones simples de marketing suele ser más rápido de montar, con menos fricción para un equipo no técnico.
 
 ### Preguntas de Reflexión
 
@@ -656,7 +656,7 @@ To use this template, you need to be on n8n version 1.50.0 or later. |
 | Nodos que utiliza (listado) | Chat Trigger, AI Agent, OpenAI Chat Model, Window Buffer Memory |
 | ¿Usa nodo AI Agent? | Sí |
 | ¿Incluye memoria? | Sí |
-| ¿Qué herramientas (tools) usa el agente? |Si, se integra con N8n y sus heramientas |
+| ¿Qué herramientas (tools) usa el agente? | No usa tools externas complejas; se centra en chat + memoria para conversación. |
 | ¿Qué trigger lo inicia? | Chat Trigger |
 | Complejidad estimada (Baja/Media/Alta) | Baja |
 | ¿Podrías usarlo como base para un proyecto propio? | Sí, como base para un asistente interno sencillo. |
@@ -671,7 +671,7 @@ To use this template, you need to be on n8n version 1.50.0 or later. |
 | Nodos que utiliza (listado) | Chat Trigger, AI Agent, OpenAI Chat Model, SerpAPI Tool, HTTP Request Tool, Memory |
 | ¿Usa nodo AI Agent? | Sí |
 | ¿Incluye memoria? | Sí |
-| ¿Qué herramientas (tools) usa el agente? | SerpAPI, HTTP Request y calculadora. |
+| ¿Qué herramientas (tools) usa el agente? | Tool personalizada en JavaScript (código), y se puede extender con tools extra según el caso. |
 | ¿Qué trigger lo inicia? | Chat Trigger |
 | Complejidad estimada (Baja/Media/Alta) | Media |
 | ¿Podrías usarlo como base para un proyecto propio? | Sí, sobre todo para un agente de investigacion rapida. |
