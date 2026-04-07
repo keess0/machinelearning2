@@ -638,7 +638,7 @@ Ajustes realizados al system prompt tras las pruebas:
 | Calidad de ejemplos | 5/5 | 4/5 |
 | Manejo de edge cases | 5/5 | 4/5 |
 | Resistencia a injection | 5/5 | 5/5 |
-
+![1774978093872](image/practica/1774978093872.png)
 **Entregable:**
 - Tabla comparativa completada
 - Conclusión: ¿qué modelo recomendarías para esta tarea?
