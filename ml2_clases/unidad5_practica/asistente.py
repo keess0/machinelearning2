@@ -37,7 +37,7 @@ def crear_cadena_rag(vectorstore):
 
     # Configurar modelo
     llm = ChatOpenAI(
-        model="stepfun/step-3.5-flash:free",
+        model="openai/gpt-oss-20b:free",
         openai_api_key=os.getenv("OPENROUTER_API_KEY"),
         openai_api_base="https://openrouter.ai/api/v1",
         temperature=0.3
