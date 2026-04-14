@@ -1,0 +1,13 @@
+# Credenciales OAuth - NUNCA subir al repositorio
+credentials.json
+token.json
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Capturas (subir manualmente si se desea)
+# screenshots/
